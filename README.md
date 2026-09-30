@@ -1,5 +1,7 @@
 # wadachi
 
+[![CI](https://github.com/m96-chan/wadachi/actions/workflows/ci.yml/badge.svg)](https://github.com/m96-chan/wadachi/actions/workflows/ci.yml)
+
 English | [日本語](README.ja.md)
 
 > A couples app that shares your plans and memories through the calendars and albums you already use.
@@ -161,6 +163,38 @@ cd iosApp && xcodegen generate && open iosApp.xcodeproj
 
 Xcode builds the Kotlin framework through Gradle. If `JAVA_HOME` is not set, the JDK bundled with Android Studio is used.
 
+### CI
+
+On every push to `main` and every pull request, GitHub Actions runs:
+
+- **Android**: tests, lint, and a debug APK build (the APK is kept as an Actions artifact for 7 days)
+- **iOS**: tests on the iOS simulator and an app build
+
+### Release
+
+Pushing a tag like `v1.2.3` creates a GitHub Release with a signed APK attached. GitHub attaches the source code (zip / tar.gz) automatically.
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The version name comes from the tag. The versionCode is `major × 10000 + minor × 100 + patch`.
+
+#### One-time setup (signing key)
+
+Create an APK signing key and register it as repository secrets. **If this key is lost, updates can no longer be shipped as the same app.** Back up the `.jks` file and its passwords outside the repository.
+
+```sh
+keytool -genkeypair -v -keystore wadachi-release.jks \
+  -alias wadachi -keyalg RSA -keysize 4096 -validity 10000
+
+gh secret set ANDROID_KEYSTORE_BASE64 < <(base64 -i wadachi-release.jks)
+gh secret set ANDROID_KEYSTORE_PASSWORD
+gh secret set ANDROID_KEY_ALIAS --body wadachi
+gh secret set ANDROID_KEY_PASSWORD
+```
+
 ## License
 
-TBD
+[MIT](LICENSE)

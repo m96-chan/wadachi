@@ -16,3 +16,7 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 *.xcresult
+
+# Signing keys
+*.jks
+*.keystore
