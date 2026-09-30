@@ -1,5 +1,7 @@
 # wadachi
 
+[![CI](https://github.com/m96-chan/wadachi/actions/workflows/ci.yml/badge.svg)](https://github.com/m96-chan/wadachi/actions/workflows/ci.yml)
+
 [English](README.md) | 日本語
 
 > 二人の予定と思い出を、いつものカレンダーとアルバムのまま共有するカップルアプリ。
@@ -161,6 +163,38 @@ cd iosApp && xcodegen generate && open iosApp.xcodeproj
 
 Xcode のビルド時に、Kotlin のフレームワークは Gradle でビルドされます。`JAVA_HOME` が未設定の場合は Android Studio 同梱の JDK を使います。
 
+### CI
+
+`main` への push と PR で、GitHub Actions が次を実行します。
+
+- **Android**: テスト、lint、デバッグ APK のビルド（APK は Actions の成果物として 7 日間保存）
+- **iOS**: iOS シミュレーターでのテスト、アプリのビルド
+
+### リリース
+
+`v1.2.3` の形式のタグを push すると、署名済みの APK を添付した GitHub Release が作られます。ソースコード（zip / tar.gz）は GitHub が Release に自動で添付します。
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+バージョン名はタグから取ります。versionCode は `メジャー × 10000 + マイナー × 100 + パッチ` です。
+
+#### 初回だけ必要な準備（署名鍵）
+
+APK の署名鍵を作り、リポジトリの Secrets に登録します。**この鍵を失うと、同じアプリとして更新を配布できなくなります。** `.jks` ファイルとパスワードは、リポジトリの外に必ずバックアップしてください。
+
+```sh
+keytool -genkeypair -v -keystore wadachi-release.jks \
+  -alias wadachi -keyalg RSA -keysize 4096 -validity 10000
+
+gh secret set ANDROID_KEYSTORE_BASE64 < <(base64 -i wadachi-release.jks)
+gh secret set ANDROID_KEYSTORE_PASSWORD
+gh secret set ANDROID_KEY_ALIAS --body wadachi
+gh secret set ANDROID_KEY_PASSWORD
+```
+
 ## ライセンス
 
-未定
+[MIT](LICENSE)
