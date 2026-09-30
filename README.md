@@ -4,7 +4,7 @@ English | [日本語](README.ja.md)
 
 > A couples app that shares your plans and memories through the calendars and albums you already use.
 
-> **Status: Concept stage.** There is no code yet. This document is a working design draft.
+> **Status: Concept stage.** The app is only a skeleton that launches. This document is a working design draft.
 
 ---
 
@@ -124,10 +124,42 @@ Nothing here is decided. Priorities are provisional.
 
 ## 7. Open Questions
 
-- **Implementation**: Native Swift + Kotlin, or a shared codebase with Kotlin Multiplatform, Flutter, or similar
 - **iCloud Calendar support**: Whether to also support people without a Google account through the device calendar (EventKit / CalendarContract)
 - **Album storage**: Which of options A–C, or a combination
 - **Notifications**: How to push notifications to the partner without a server (whether Google Calendar notifications are enough)
+
+## 8. Development
+
+### Tech Stack
+
+**Kotlin Multiplatform + Compose Multiplatform**, sharing both logic and UI. OS APIs (EventKit / CalendarContract, Vision / ML Kit, photo pickers, widgets) are handled through expect/actual or native code on each OS.
+
+| Directory | Contents |
+| --- | --- |
+| `shared/` | Shared code (UI and logic): `commonMain` / `androidMain` / `iosMain` |
+| `androidApp/` | Android app |
+| `iosApp/` | iOS app. The Xcode project is generated from `project.yml` with XcodeGen |
+
+### Requirements
+
+- JDK 21 (the one bundled with Android Studio works)
+- Android SDK Platform 37
+- Xcode 26 and XcodeGen (iOS only)
+
+### Build
+
+```sh
+# Android
+./gradlew :androidApp:assembleDebug
+
+# Tests
+./gradlew :shared:allTests
+
+# iOS (generate the Xcode project, then open it in Xcode)
+cd iosApp && xcodegen generate && open iosApp.xcodeproj
+```
+
+Xcode builds the Kotlin framework through Gradle. If `JAVA_HOME` is not set, the JDK bundled with Android Studio is used.
 
 ## License
 

@@ -4,7 +4,7 @@
 
 > 二人の予定と思い出を、いつものカレンダーとアルバムのまま共有するカップルアプリ。
 
-> **ステータス: 構想段階。** まだコードはありません。このドキュメントは設計の叩き台です。
+> **ステータス: 構想段階。** アプリは起動するだけの雛形です。このドキュメントは設計の叩き台です。
 
 ---
 
@@ -124,10 +124,42 @@ TimeTree は外部からの読み出し手段が限られています（2026 年
 
 ## 7. 未決事項
 
-- **実装方式**: Swift + Kotlin のネイティブ 2 本立てにするか、Kotlin Multiplatform / Flutter などで共通化するか
 - **iCloud カレンダー対応**: Google アカウントを持たない人向けに、端末カレンダー（EventKit / CalendarContract）経由でも対応するか
 - **アルバムの保存先**: 上記 A〜C のどれにするか。組み合わせるか
 - **通知**: サーバーを使わずに相手へのプッシュ通知をどう届けるか（Google カレンダーの通知で足りるか）
+
+## 8. 開発
+
+### 技術スタック
+
+**Kotlin Multiplatform + Compose Multiplatform** で、ロジックと UI を共通化します。各 OS の API（EventKit / CalendarContract、Vision / ML Kit、写真ピッカー、ウィジェット）は expect/actual や各 OS のネイティブコードで扱います。
+
+| ディレクトリ | 内容 |
+| --- | --- |
+| `shared/` | 共通コード（UI とロジック）。`commonMain` / `androidMain` / `iosMain` |
+| `androidApp/` | Android アプリ本体 |
+| `iosApp/` | iOS アプリ本体。Xcode プロジェクトは XcodeGen で `project.yml` から生成します |
+
+### 必要なもの
+
+- JDK 21（Android Studio 同梱のものでも可）
+- Android SDK Platform 37
+- Xcode 26 と XcodeGen（iOS のみ）
+
+### ビルド
+
+```sh
+# Android
+./gradlew :androidApp:assembleDebug
+
+# テスト
+./gradlew :shared:allTests
+
+# iOS（Xcode プロジェクトを生成してから Xcode で開く）
+cd iosApp && xcodegen generate && open iosApp.xcodeproj
+```
+
+Xcode のビルド時に、Kotlin のフレームワークは Gradle でビルドされます。`JAVA_HOME` が未設定の場合は Android Studio 同梱の JDK を使います。
 
 ## ライセンス
 
